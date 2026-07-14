@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>命理罗盘 · 八字排盘</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>命理罗盘</h1>
+    <p class="subtitle">生辰八字排盘 · 圆盘可视化</p>
+  </header>
+
+  <main class="layout">
+    <section class="panel form-panel">
+      <h2>出生信息</h2>
+      <form id="baziForm">
+        <label class="radio-group">
+          日期类型
+          <span>
+            <label class="inline"><input type="radio" name="calendarMode" value="solar" checked> 公历</label>
+            <label class="inline"><input type="radio" name="calendarMode" value="lunar"> 农历</label>
+          </span>
+        </label>
+
+        <div id="solarFields">
+          <label>
+            出生日期
+            <input type="date" id="birthDate">
+          </label>
+        </div>
+
+        <div id="lunarFields" style="display:none;">
+          <label>
+            农历年份
+            <input type="number" id="lunarYear" min="1901" max="2099" placeholder="如 1990">
+          </label>
+          <label>
+            农历月份
+            <select id="lunarMonth"></select>
+          </label>
+          <label class="radio-group" id="lunarLeapWrap" style="display:none;">
+            <span class="inline"><input type="checkbox" id="lunarLeap"> 是闰月</span>
+          </label>
+          <label>
+            农历日
+            <select id="lunarDay"></select>
+          </label>
+        </div>
+
+        <label>
+          出生时间（24 小时制，按北京时间）
+          <input type="time" id="birthTime" step="60" required>
+        </label>
+        <label class="radio-group">
+          性别
+          <span>
+            <label class="inline"><input type="radio" name="gender" value="male" checked> 男</label>
+            <label class="inline"><input type="radio" name="gender" value="female"> 女</label>
+          </span>
+        </label>
+        <button type="submit">排盘</button>
+      </form>
+      <div id="calendarConvert" class="note"></div>
+      <p class="note">
+        说明：年柱、月柱以节气（立春等）为界推算，非农历正月初一；
+        节气时刻为天文近似公式，存在约 1~2 小时误差，
+        若出生时间恰好接近节气交界，四柱可能受影响，请酌情核对。
+        23:00~23:59 按"晚子时"惯例计入次日日柱。
+        农历换算基于朔望月天文近似公式现算，同样存在极小概率的边界误差。
+      </p>
+    </section>
+
+    <section class="panel compass-panel">
+      <h2>命盘罗盘</h2>
+      <div id="compassWrap" class="compass-wrap">
+        <svg id="compass" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div id="legend" class="legend"></div>
+    </section>
+
+    <section class="panel detail-panel">
+      <h2>四柱详情</h2>
+      <div id="pillarDetail" class="pillar-detail placeholder">请先在左侧输入出生信息并点击"排盘"</div>
+    </section>
+
+    <section class="panel dayun-panel">
+      <h2>大运走势</h2>
+      <div id="dayunTimeline" class="dayun-timeline placeholder">排盘后显示大运时间轴</div>
+    </section>
+  </main>
+
+  <script src="core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

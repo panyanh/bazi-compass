@@ -1,0 +1,267 @@
+:root {
+  --bg: #030309;
+  --bg-elev: #0a0a16;
+  --panel-bg: rgba(18, 16, 28, 0.72);
+  --text: #ecdfc4;
+  --text-dim: #9c9081;
+  --border: rgba(216, 178, 110, 0.24);
+  --accent: #e0b46a;
+  --accent-soft: rgba(224, 180, 106, 0.35);
+  --wood: #57c26f;
+  --fire: #ef6a5a;
+  --earth: #e0b45a;
+  --metal: #d7d1bd;
+  --water: #5aa0e6;
+  --glow-blue: #3f8fe0;
+  --glow-pink: #c85fc0;
+  --glow-purple: #6f5bcf;
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.55);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(ellipse 900px 600px at 78% 12%, rgba(63, 143, 224, 0.16), transparent 60%),
+    radial-gradient(ellipse 800px 700px at 12% 85%, rgba(200, 95, 192, 0.13), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.topbar {
+  text-align: center;
+  padding: 32px 16px 12px;
+}
+.topbar h1 {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: 6px;
+  background: linear-gradient(120deg, var(--accent), #fbe3ab 40%, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 24px rgba(224, 180, 106, 0.25);
+}
+.subtitle {
+  margin: 6px 0 0;
+  color: var(--text-dim);
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr 300px;
+  grid-template-areas:
+    "form compass detail"
+    "form dayun   detail";
+  gap: 18px;
+  max-width: 1200px;
+  margin: 16px auto 40px;
+  padding: 0 16px;
+}
+
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "form"
+      "compass"
+      "detail"
+      "dayun";
+  }
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow), inset 0 0 40px rgba(224, 180, 106, 0.03);
+  overflow-x: auto;
+  backdrop-filter: blur(6px);
+}
+.panel h2 {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: var(--accent);
+  letter-spacing: 3px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.form-panel { grid-area: form; }
+.compass-panel { grid-area: compass; }
+.detail-panel { grid-area: detail; }
+.dayun-panel { grid-area: dayun; }
+
+form label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+form input[type="date"],
+form input[type="time"],
+form input[type="number"],
+form select {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-elev);
+  color: var(--text);
+  font-size: 14px;
+  color-scheme: dark;
+}
+#lunarLeapWrap {
+  margin-bottom: 14px;
+}
+#lunarLeapWrap .inline {
+  color: var(--accent);
+}
+#calendarConvert {
+  min-height: 1em;
+  color: var(--accent);
+}
+.radio-group span {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
+}
+.inline {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--text);
+  margin: 0 !important;
+}
+form button {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid var(--accent-soft);
+  border-radius: 8px;
+  background: linear-gradient(160deg, #c98f45, #8a5a2b);
+  color: #fff4de;
+  font-size: 15px;
+  letter-spacing: 4px;
+  cursor: pointer;
+  margin-top: 6px;
+  box-shadow: 0 4px 18px rgba(201, 143, 69, 0.25);
+}
+form button:hover { filter: brightness(1.1); }
+
+.note {
+  margin-top: 14px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+.compass-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+#compass {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  filter: drop-shadow(0 0 40px rgba(63, 143, 224, 0.12)) drop-shadow(0 0 40px rgba(200, 95, 192, 0.1));
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-dim);
+}
+.legend i {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.placeholder {
+  color: var(--text-dim);
+  font-size: 13px;
+  text-align: center;
+  padding: 30px 10px;
+}
+
+.pillar-detail table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.pillar-detail th, .pillar-detail td {
+  border-bottom: 1px solid var(--border);
+  padding: 7px 4px;
+  text-align: center;
+}
+.pillar-detail th { color: var(--text-dim); font-weight: 500; }
+.ganzhi-big {
+  font-size: 18px;
+  font-weight: 600;
+}
+.wx-木 { color: var(--wood); }
+.wx-火 { color: var(--fire); }
+.wx-土 { color: var(--earth); }
+.wx-金 { color: var(--metal); }
+.wx-水 { color: var(--water); }
+
+.hidden-list {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.dayun-timeline {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+.dayun-card {
+  flex: 0 0 auto;
+  min-width: 84px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  background: var(--bg-elev);
+}
+.dayun-card.current {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset, 0 0 16px rgba(224, 180, 106, 0.35);
+}
+.dayun-card .gz {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+.dayun-card .age {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.dayun-meta {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
