@@ -538,11 +538,53 @@ function getYearGanzhi(year) {
   return { ganIdx: idx % 10, zhiIdx: idx % 12, gan: TIANGAN[idx % 10], zhi: DIZHI[idx % 12] };
 }
 
+/**
+ * 日主旺衰判断（简化参考算法，非专业断语）
+ * 思路：以 calcBazi 已统计的五行得分为基础，把"同我"(比劫)与"生我"(印)
+ * 归为帮扶一方，"我生"(食伤)、"我克"(财)、"克我"(官杀) 归为耗克一方，
+ * 再叠加月令（月支五行）的额外加权——因为传统命理中月令对旺衰影响最大。
+ * 返回帮扶/耗克得分及一个五档结论，仅作粗略参考。
+ */
+function judgeStrength(bazi) {
+  const dayWx = elementOfGan(bazi.dayGanIdx);
+  const yin = (dayWx + 4) % 5;   // 生我（印）
+  const shi = (dayWx + 1) % 5;   // 我生（食伤）
+  const cai = (dayWx + 2) % 5;   // 我克（财）
+  const guan = (dayWx + 3) % 5;  // 克我（官杀）
+
+  let support = bazi.wuxingScore[dayWx] + bazi.wuxingScore[yin];
+  let drain = bazi.wuxingScore[shi] + bazi.wuxingScore[cai] + bazi.wuxingScore[guan];
+
+  // 月令加权：月支为提纲，对旺衰影响最大，额外加权而非仅按普通地支计入
+  const monthZhiWx = elementOfZhi(bazi.pillars.month.zhiIdx);
+  let monthRelation;
+  if (monthZhiWx === dayWx) { support += 1.5; monthRelation = '得令'; }
+  else if (monthZhiWx === yin) { support += 0.8; monthRelation = '半得令（月生日主）'; }
+  else if (monthZhiWx === shi) { drain += 0.8; monthRelation = '不得令（日主生月）'; }
+  else if (monthZhiWx === cai) { drain += 1; monthRelation = '不得令（日主克月）'; }
+  else { drain += 1.5; monthRelation = '不得令（月克日主）'; }
+
+  const total = support + drain;
+  const ratio = total > 0 ? support / total : 0.5;
+
+  let level;
+  if (ratio >= 0.62) level = '身旺';
+  else if (ratio >= 0.53) level = '偏旺';
+  else if (ratio > 0.47) level = '中和';
+  else if (ratio > 0.38) level = '偏弱';
+  else level = '身弱';
+
+  return {
+    dayWx, support, drain, ratio, level, monthRelation,
+    dayWxName: WUXING_NAMES[dayWx]
+  };
+}
+
 if (typeof module !== 'undefined') {
   module.exports = {
     TIANGAN, DIZHI, WUXING_NAMES, SHENGXIAO, JIEQI_NAMES,
     getJieqiDate, calcBazi, calcDayun, getYearGanzhi, elementOfGan, elementOfZhi, getShishen,
     solarToLunar, lunarToSolar, getLeapMonthOfYear, getLunarMonthLength, formatLunar, lunarDayName,
-    LUNAR_MONTH_NAMES, dateToJD, newMoonJD
+    LUNAR_MONTH_NAMES, dateToJD, newMoonJD, judgeStrength
   };
 }

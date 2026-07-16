@@ -204,6 +204,13 @@ function renderPillarTable(bazi) {
     return `<td class="ganzhi-big wx-${wx}">${d.gan}${d.zhi}</td>`;
   }).join('') + '</tr>';
 
+  html += '<tr><th>五行</th>' + order.map(k => {
+    const d = bazi.detail.find(x => x.key === k);
+    const ganWx = ['木', '火', '土', '金', '水'][elementOfGan(d.ganIdx)];
+    const zhiWx = ['木', '火', '土', '金', '水'][elementOfZhi(d.zhiIdx)];
+    return `<td class="wx-pair"><b class="wx-${ganWx}">${ganWx}</b><span class="sep">/</span><b class="wx-${zhiWx}">${zhiWx}</b></td>`;
+  }).join('') + '</tr>';
+
   html += '<tr><th>十神</th>' + order.map(k => {
     const d = bazi.detail.find(x => x.key === k);
     return `<td>${d.shishenGan}</td>`;
@@ -223,6 +230,28 @@ function renderPillarTable(bazi) {
   html += '</tbody></table>';
   wrap.innerHTML = html;
   wrap.classList.remove('placeholder');
+}
+
+function renderStrength(bazi, strength) {
+  const dayDetail = bazi.detail.find(d => d.key === 'day');
+  const wxClass = 'wx-' + strength.dayWxName;
+
+  const summaryEl = document.getElementById('strengthSummary');
+  summaryEl.innerHTML = `<span class="badge">日主 ${dayDetail.gan}<b class="${wxClass}">(${strength.dayWxName})</b>
+    <span class="level">${strength.level}</span></span>`;
+
+  const supportPct = (strength.ratio * 100).toFixed(0);
+  const drainPct = (100 - strength.ratio * 100).toFixed(0);
+  const detailEl = document.getElementById('strengthDetail');
+  detailEl.innerHTML = `
+    <div>${strength.monthRelation}，帮扶(比劫+印) ${strength.support.toFixed(1)} 分
+      ： 耗克(食伤+财+官杀) ${strength.drain.toFixed(1)} 分</div>
+    <div class="bar">
+      <div class="support" style="width:${supportPct}%"></div>
+      <div class="drain" style="width:${drainPct}%"></div>
+    </div>
+    <div>旺衰为简化参考算法（五行得分 + 月令加权推算），实际断语还需结合通根深浅、组合关系等综合考量，仅供参考。</div>
+  `;
 }
 
 function renderDayun(dayun, birthDate) {
@@ -367,9 +396,11 @@ document.getElementById('baziForm').addEventListener('submit', (e) => {
 
   const bazi = calcBazi(birthDate, gender);
   const dayun = calcDayun(birthDate, gender, bazi.pillars.year, bazi.pillars.month);
+  const strength = judgeStrength(bazi);
 
   renderCompass(bazi);
   renderPillarTable(bazi);
+  renderStrength(bazi, strength);
   renderDayun(dayun, birthDate);
   updateCalendarConvertPreview();
 });
