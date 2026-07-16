@@ -290,8 +290,11 @@ const lunarYearInput = document.getElementById('lunarYear');
 const solarFields = document.getElementById('solarFields');
 const lunarFields = document.getElementById('lunarFields');
 const calendarConvertEl = document.getElementById('calendarConvert');
-const birthDateInput = document.getElementById('birthDate');
-const birthTimeInput = document.getElementById('birthTime');
+const solarYearInput = document.getElementById('solarYear');
+const solarMonthSelect = document.getElementById('solarMonth');
+const solarDaySelect = document.getElementById('solarDay');
+const birthHourSelect = document.getElementById('birthHour');
+const birthMinuteSelect = document.getElementById('birthMinute');
 const birthCityInput = document.getElementById('birthCityInput');
 const cityDropdown = document.getElementById('cityDropdown');
 const solarTimeConvertEl = document.getElementById('solarTimeConvert');
@@ -341,7 +344,21 @@ birthCityInput.addEventListener('input', () => {
 birthCityInput.addEventListener('focus', () => {
   if (birthCityInput.value.trim()) birthCityInput.dispatchEvent(new Event('input'));
 });
-birthCityInput.addEventListener('blur', closeCityDropdown);
+birthCityInput.addEventListener('blur', () => {
+  // 如果用户直接输入了完整、唯一匹配的城市名但没有点下拉项选择，
+  // 失焦时自动补选，避免"看着填对了、实际没生效"的静默失败
+  if (!selectedCity) {
+    const q = birthCityInput.value.trim();
+    const exact = CHINA_CITY_LONGITUDE.find(c => c.name === q);
+    if (exact) {
+      selectedCity = exact;
+      updateSolarTimePreview();
+    } else if (q) {
+      birthCityInput.value = '';
+    }
+  }
+  closeCityDropdown();
+});
 
 function updateSolarTimePreview() {
   const birthDate = getBirthDateFromForm();
@@ -355,12 +372,48 @@ function updateSolarTimePreview() {
     `真太阳时修正：${sign}${adjustMinutes.toFixed(1)}分钟 → 排盘实际使用 ${pad(adjusted.getHours())}:${pad(adjusted.getMinutes())}`;
 }
 
+// ---- 公历/时间选择控件初始化 ----
+// 用下拉选择而不是原生 <input type="date"/"time">：微信内置浏览器等
+// 移动端 webview 对这两种原生控件的兼容性不稳定（曾出现选择器显示与
+// 实际 value 不一致，导致排出的时柱与用户所选时间对不上），下拉选择
+// 在所有浏览器里行为一致，不存在这类风险。
+function fillOptions(select, from, to, formatter) {
+  select.innerHTML = '';
+  for (let v = from; v <= to; v++) {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = formatter ? formatter(v) : String(v);
+    select.appendChild(opt);
+  }
+}
+
 LUNAR_MONTH_NAMES.forEach((name, i) => {
   const opt = document.createElement('option');
   opt.value = i + 1;
   opt.textContent = name;
   lunarMonthSelect.appendChild(opt);
 });
+
+fillOptions(solarMonthSelect, 1, 12, v => v + '月');
+fillOptions(birthHourSelect, 0, 23, v => String(v).padStart(2, '0') + '时');
+fillOptions(birthMinuteSelect, 0, 59, v => String(v).padStart(2, '0') + '分');
+
+function daysInSolarMonth(year, month) {
+  return new Date(year, month, 0).getDate(); // month: 1-12
+}
+
+function fillSolarDayOptions() {
+  const y = Number(solarYearInput.value) || 2000;
+  const m = Number(solarMonthSelect.value) || 1;
+  const maxDay = daysInSolarMonth(y, m);
+  const prev = solarDaySelect.value;
+  fillOptions(solarDaySelect, 1, maxDay, v => v + '日');
+  if (prev && Number(prev) <= maxDay) solarDaySelect.value = prev;
+}
+
+fillSolarDayOptions();
+solarYearInput.addEventListener('input', fillSolarDayOptions);
+solarMonthSelect.addEventListener('change', fillSolarDayOptions);
 
 function fillLunarDayOptions(maxDay) {
   const prev = lunarDaySelect.value;
@@ -407,20 +460,20 @@ document.querySelectorAll('input[name="calendarMode"]').forEach(r => {
     const mode = document.querySelector('input[name="calendarMode"]:checked').value;
     solarFields.style.display = mode === 'solar' ? '' : 'none';
     lunarFields.style.display = mode === 'lunar' ? '' : 'none';
-    birthDateInput.required = mode === 'solar';
     updateCalendarConvertPreview();
   });
 });
 
 function getBirthDateFromForm() {
   const mode = document.querySelector('input[name="calendarMode"]:checked').value;
-  const timeVal = birthTimeInput.value;
-  const [hh, mm] = timeVal ? timeVal.split(':').map(Number) : [0, 0];
+  const hh = Number(birthHourSelect.value);
+  const mm = Number(birthMinuteSelect.value);
 
   if (mode === 'solar') {
-    const dateVal = birthDateInput.value;
-    if (!dateVal) return null;
-    const [y, m, d] = dateVal.split('-').map(Number);
+    const y = Number(solarYearInput.value);
+    const m = Number(solarMonthSelect.value);
+    const d = Number(solarDaySelect.value);
+    if (!y || !m || !d) return null;
     return new Date(y, m - 1, d, hh, mm, 0);
   }
 
@@ -444,11 +497,15 @@ function updateCalendarConvertPreview() {
   }
 }
 
-[birthDateInput, birthTimeInput, lunarYearInput, lunarMonthSelect, lunarDaySelect, lunarLeapCheckbox]
-  .forEach(el => el.addEventListener('input', updateCalendarConvertPreview));
-
-[birthDateInput, birthTimeInput, lunarYearInput, lunarMonthSelect, lunarDaySelect, lunarLeapCheckbox]
-  .forEach(el => el.addEventListener('input', updateSolarTimePreview));
+const dateTimeInputs = [
+  solarYearInput, solarMonthSelect, solarDaySelect,
+  birthHourSelect, birthMinuteSelect,
+  lunarYearInput, lunarMonthSelect, lunarDaySelect, lunarLeapCheckbox
+];
+dateTimeInputs.forEach(el => el.addEventListener('input', updateCalendarConvertPreview));
+dateTimeInputs.forEach(el => el.addEventListener('change', updateCalendarConvertPreview));
+dateTimeInputs.forEach(el => el.addEventListener('input', updateSolarTimePreview));
+dateTimeInputs.forEach(el => el.addEventListener('change', updateSolarTimePreview));
 
 document.getElementById('baziForm').addEventListener('submit', (e) => {
   e.preventDefault();

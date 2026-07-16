@@ -120,6 +120,25 @@ form select {
   font-size: 14px;
   color-scheme: dark;
 }
+.date-select-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.date-select-row input[type="number"] {
+  margin-top: 0;
+  flex: 1.2;
+  min-width: 0;
+}
+.date-select-row select {
+  margin-top: 0;
+  flex: 1;
+  min-width: 0;
+}
+.date-select-row .time-sep {
+  color: var(--text-dim);
+}
 .city-autocomplete {
   position: relative;
 }

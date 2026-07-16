@@ -27,7 +27,11 @@
         <div id="solarFields">
           <label>
             出生日期
-            <input type="date" id="birthDate">
+            <div class="date-select-row">
+              <input type="number" id="solarYear" min="1901" max="2099" placeholder="年，如1990">
+              <select id="solarMonth"></select>
+              <select id="solarDay"></select>
+            </div>
           </label>
         </div>
 
@@ -51,7 +55,11 @@
 
         <label>
           出生时间（24 小时制，按北京时间）
-          <input type="time" id="birthTime" step="60" required>
+          <div class="date-select-row">
+            <select id="birthHour"></select>
+            <span class="time-sep">:</span>
+            <select id="birthMinute"></select>
+          </div>
         </label>
         <label>
           出生城市（选填，用于真太阳时修正）
