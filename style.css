@@ -107,6 +107,7 @@ form label {
 form input[type="date"],
 form input[type="time"],
 form input[type="number"],
+form input[type="text"],
 form select {
   display: block;
   width: 100%;
@@ -118,6 +119,48 @@ form select {
   color: var(--text);
   font-size: 14px;
   color-scheme: dark;
+}
+.city-autocomplete {
+  position: relative;
+}
+.city-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--bg-elev);
+  border: 1px solid var(--accent-soft);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  z-index: 20;
+}
+.city-dropdown.open { display: block; }
+.city-dropdown .item {
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.city-dropdown .item .lng {
+  color: var(--text-dim);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.city-dropdown .item:hover,
+.city-dropdown .item.active {
+  background: rgba(224, 180, 106, 0.14);
+}
+.city-dropdown .empty {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--text-dim);
 }
 #lunarLeapWrap {
   margin-bottom: 14px;

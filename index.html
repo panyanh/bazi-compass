@@ -54,8 +54,11 @@
           <input type="time" id="birthTime" step="60" required>
         </label>
         <label>
-          出生地经度（选填，用于真太阳时修正）
-          <input type="number" id="birthLongitude" min="-180" max="180" step="0.1" placeholder="东经填正数，如北京116.4、乌鲁木齐87.6">
+          出生城市（选填，用于真太阳时修正）
+          <div class="city-autocomplete">
+            <input type="text" id="birthCityInput" autocomplete="off" placeholder="输入城市名，如 北京、乌鲁木齐">
+            <div id="cityDropdown" class="city-dropdown"></div>
+          </div>
         </label>
         <label class="radio-group">
           性别
@@ -74,8 +77,9 @@
         若出生时间恰好接近节气交界，四柱可能受影响，请酌情核对。
         23:00~23:59 按"晚子时"惯例计入次日日柱。
         农历换算基于朔望月天文近似公式现算，同样存在极小概率的边界误差。
-        填写出生地经度后，会先将北京时间修正为当地真太阳时（经度时差+均时差），
-        再据此排盘；不填则按北京时间标准计算，不做修正。
+        选择出生城市后，会先将北京时间修正为当地真太阳时（经度时差+均时差），
+        再据此排盘；不选则按北京时间标准计算，不做修正。
+        城市经度取该城市地级行政中心坐标，与实际出生地精确经度可能有小幅误差。
       </p>
     </section>
 
@@ -101,6 +105,7 @@
   </main>
 
   <script src="core.js"></script>
+  <script src="cities.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

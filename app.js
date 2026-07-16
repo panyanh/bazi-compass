@@ -292,15 +292,56 @@ const lunarFields = document.getElementById('lunarFields');
 const calendarConvertEl = document.getElementById('calendarConvert');
 const birthDateInput = document.getElementById('birthDate');
 const birthTimeInput = document.getElementById('birthTime');
-const birthLongitudeInput = document.getElementById('birthLongitude');
+const birthCityInput = document.getElementById('birthCityInput');
+const cityDropdown = document.getElementById('cityDropdown');
 const solarTimeConvertEl = document.getElementById('solarTimeConvert');
 
+// ---- 出生城市搜索选择（用于真太阳时经度修正）----
+let selectedCity = null; // { name, lng } | null
+
 function getLongitudeFromForm() {
-  const raw = birthLongitudeInput.value;
-  if (raw === '' || raw === null) return null;
-  const n = Number(raw);
-  return isNaN(n) ? null : n;
+  return selectedCity ? selectedCity.lng : null;
 }
+
+function closeCityDropdown() {
+  cityDropdown.classList.remove('open');
+  cityDropdown.innerHTML = '';
+}
+
+function renderCityDropdown(matches) {
+  cityDropdown.innerHTML = '';
+  if (matches.length === 0) {
+    cityDropdown.innerHTML = '<div class="empty">没有匹配的城市，可留空不做修正</div>';
+  } else {
+    matches.slice(0, 30).forEach(c => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.innerHTML = `<span>${c.name}</span><span class="lng">东经${c.lng}°</span>`;
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault(); // 防止 input 先 blur 导致下拉在点击前关闭
+        selectedCity = c;
+        birthCityInput.value = c.name;
+        closeCityDropdown();
+        updateSolarTimePreview();
+      });
+      cityDropdown.appendChild(item);
+    });
+  }
+  cityDropdown.classList.add('open');
+}
+
+birthCityInput.addEventListener('input', () => {
+  const q = birthCityInput.value.trim();
+  if (selectedCity && q !== selectedCity.name) selectedCity = null;
+  if (!q) { closeCityDropdown(); updateSolarTimePreview(); return; }
+  const matches = CHINA_CITY_LONGITUDE.filter(c => c.name.includes(q));
+  renderCityDropdown(matches);
+  updateSolarTimePreview();
+});
+birthCityInput.addEventListener('focus', () => {
+  if (birthCityInput.value.trim()) birthCityInput.dispatchEvent(new Event('input'));
+});
+birthCityInput.addEventListener('blur', closeCityDropdown);
 
 function updateSolarTimePreview() {
   const birthDate = getBirthDateFromForm();
@@ -406,7 +447,7 @@ function updateCalendarConvertPreview() {
 [birthDateInput, birthTimeInput, lunarYearInput, lunarMonthSelect, lunarDaySelect, lunarLeapCheckbox]
   .forEach(el => el.addEventListener('input', updateCalendarConvertPreview));
 
-[birthDateInput, birthTimeInput, birthLongitudeInput, lunarYearInput, lunarMonthSelect, lunarDaySelect, lunarLeapCheckbox]
+[birthDateInput, birthTimeInput, lunarYearInput, lunarMonthSelect, lunarDaySelect, lunarLeapCheckbox]
   .forEach(el => el.addEventListener('input', updateSolarTimePreview));
 
 document.getElementById('baziForm').addEventListener('submit', (e) => {
