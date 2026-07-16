@@ -530,6 +530,45 @@ function calcDayun(date, gender, yearPillar, monthPillar) {
   return { isForward, startAgeYears, startAgeMonths, startAgeDays, list };
 }
 
+/* ------------------------------------------------------------------
+ * 真太阳时修正
+ * 中国全国统一使用北京时间（东八区，以东经120°为标准子午线），但各地
+ * 实际的太阳位置（真太阳时）与标准时间有差异，由两部分组成：
+ * 1) 经度时差：出生地经度与120°的差，每差1°相差4分钟；
+ * 2) 均时差（Equation of Time）：地球公转轨道为椭圆、地轴倾斜导致
+ *    真太阳日长度全年有 -14~+16 分钟左右的周期性偏差。
+ * 二者相加即为"北京时间 -> 当地真太阳时"的修正分钟数。
+ * ------------------------------------------------------------------ */
+
+function dayOfYear(date) {
+  const start = new Date(date.getFullYear(), 0, 0);
+  return Math.floor((date - start) / 86400000);
+}
+
+// 均时差近似公式（太阳能工程常用近似式），误差约在1分钟以内
+function equationOfTimeMinutes(date) {
+  const N = dayOfYear(date);
+  const B = (2 * Math.PI / 364) * (N - 81);
+  return 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+}
+
+/**
+ * 真太阳时修正分钟数：longitude 为出生地经度（东经为正，如北京116.4）
+ */
+function trueSolarTimeAdjustMinutes(date, longitude) {
+  const longitudeCorrection = (longitude - 120) * 4;
+  return longitudeCorrection + equationOfTimeMinutes(date);
+}
+
+/**
+ * 应用真太阳时修正，返回修正后的 Date（若 longitude 为 null/undefined 则原样返回）
+ */
+function applyTrueSolarTime(date, longitude) {
+  if (longitude === null || longitude === undefined || longitude === '' || isNaN(longitude)) return date;
+  const adjustMinutes = trueSolarTimeAdjustMinutes(date, longitude);
+  return new Date(date.getTime() + adjustMinutes * 60000);
+}
+
 /**
  * 流年：给定年份，返回该年的年柱（以立春为界）
  */
@@ -585,6 +624,7 @@ if (typeof module !== 'undefined') {
     TIANGAN, DIZHI, WUXING_NAMES, SHENGXIAO, JIEQI_NAMES,
     getJieqiDate, calcBazi, calcDayun, getYearGanzhi, elementOfGan, elementOfZhi, getShishen,
     solarToLunar, lunarToSolar, getLeapMonthOfYear, getLunarMonthLength, formatLunar, lunarDayName,
-    LUNAR_MONTH_NAMES, dateToJD, newMoonJD, judgeStrength
+    LUNAR_MONTH_NAMES, dateToJD, newMoonJD, judgeStrength,
+    equationOfTimeMinutes, trueSolarTimeAdjustMinutes, applyTrueSolarTime
   };
 }

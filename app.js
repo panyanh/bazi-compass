@@ -292,6 +292,27 @@ const lunarFields = document.getElementById('lunarFields');
 const calendarConvertEl = document.getElementById('calendarConvert');
 const birthDateInput = document.getElementById('birthDate');
 const birthTimeInput = document.getElementById('birthTime');
+const birthLongitudeInput = document.getElementById('birthLongitude');
+const solarTimeConvertEl = document.getElementById('solarTimeConvert');
+
+function getLongitudeFromForm() {
+  const raw = birthLongitudeInput.value;
+  if (raw === '' || raw === null) return null;
+  const n = Number(raw);
+  return isNaN(n) ? null : n;
+}
+
+function updateSolarTimePreview() {
+  const birthDate = getBirthDateFromForm();
+  const longitude = getLongitudeFromForm();
+  if (!birthDate || longitude === null) { solarTimeConvertEl.textContent = ''; return; }
+  const adjustMinutes = trueSolarTimeAdjustMinutes(birthDate, longitude);
+  const adjusted = applyTrueSolarTime(birthDate, longitude);
+  const sign = adjustMinutes >= 0 ? '+' : '';
+  const pad = n => String(n).padStart(2, '0');
+  solarTimeConvertEl.textContent =
+    `真太阳时修正：${sign}${adjustMinutes.toFixed(1)}分钟 → 排盘实际使用 ${pad(adjusted.getHours())}:${pad(adjusted.getMinutes())}`;
+}
 
 LUNAR_MONTH_NAMES.forEach((name, i) => {
   const opt = document.createElement('option');
@@ -385,6 +406,9 @@ function updateCalendarConvertPreview() {
 [birthDateInput, birthTimeInput, lunarYearInput, lunarMonthSelect, lunarDaySelect, lunarLeapCheckbox]
   .forEach(el => el.addEventListener('input', updateCalendarConvertPreview));
 
+[birthDateInput, birthTimeInput, birthLongitudeInput, lunarYearInput, lunarMonthSelect, lunarDaySelect, lunarLeapCheckbox]
+  .forEach(el => el.addEventListener('input', updateSolarTimePreview));
+
 document.getElementById('baziForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const gender = document.querySelector('input[name="gender"]:checked').value;
@@ -393,9 +417,11 @@ document.getElementById('baziForm').addEventListener('submit', (e) => {
     calendarConvertEl.textContent = '请完整填写出生日期（该农历年月日组合可能不存在，请检查闰月勾选是否正确）';
     return;
   }
+  const longitude = getLongitudeFromForm();
+  const calcDate = applyTrueSolarTime(birthDate, longitude);
 
-  const bazi = calcBazi(birthDate, gender);
-  const dayun = calcDayun(birthDate, gender, bazi.pillars.year, bazi.pillars.month);
+  const bazi = calcBazi(calcDate, gender);
+  const dayun = calcDayun(calcDate, gender, bazi.pillars.year, bazi.pillars.month);
   const strength = judgeStrength(bazi);
 
   renderCompass(bazi);
@@ -403,4 +429,5 @@ document.getElementById('baziForm').addEventListener('submit', (e) => {
   renderStrength(bazi, strength);
   renderDayun(dayun, birthDate);
   updateCalendarConvertPreview();
+  updateSolarTimePreview();
 });
